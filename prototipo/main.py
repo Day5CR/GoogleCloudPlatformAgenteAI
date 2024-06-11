@@ -66,8 +66,9 @@ def translate_role_for_streamlit(user_role):
 
 # Initialize chat session if not already initialized
 if "chat_session" not in st.session_state:
-model = ChatModel.from_pretrained("gemini-1.5-flash-001")
+    model = ChatModel.from_pretrained("gemini-1.5-flash-001")
     st.session_state.chat_session = model.start_chat()
+
 
 # Display chat history
 for message in st.session_state.chat_session.history:
