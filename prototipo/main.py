@@ -22,6 +22,7 @@ st.markdown("Agente IA: contesta directamente a las compañías por los servicio
 # Get project configuration
 PROJECT_ID = "PROJECTID_O1"
 LOCATION = "us-central1"
+model = gen_ai.GenerativeModel('gemini-1.5-flash-001')
 
 # Initialize Vertex AI
 vertexai.init(project=PROJECT_ID, location=LOCATION)
@@ -59,25 +60,51 @@ EJEMPLO 2:
 -	Cliente: Claro, mi correo es [correo electrónico]. Estoy disponible mañana a las [Hora]. 
 -	Agente IA: Perfecto, [nombre del cliente]. Te enviaré una invitación a tu correo electrónico para confirmar la cita. ¡Gracias por tu interés!
 """
+
 # Translate roles between Gemini-Pro and Streamlit terminology
 def translate_role_for_streamlit(user_role):
-    return "assistant" if user_role == "model" else user_role
+    if user_role == "model":
+        return "assistant"
+    else:
+        return user_role
 
 # Initialize chat session if not already initialized
 if "chat_session" not in st.session_state:
-    try:
-        model = gen_ai.from_pretrained("gemini-1.5-flash-001")
-    except:
-        model = gen_ai("gemini-1.5-flash-001")
-    st.session_state.chat_session = model.start_chat()
-
+    st.session_state.chat_session = model.start_chat(history=[])
 
 # Display chat history
 for message in st.session_state.chat_session.history:
-    with st.chat_message(translate_role_for_streamlit(message["role"])):
-        st.markdown(message["text"])
+    print(message)  # Add this line to inspect the structure of message
+    if isinstance(message, dict):
+        role = message.get("role")  # Access role using dictionary key
+        if role:
+            with st.chat_message(translate_role_for_streamlit(role)):
+                st.markdown(message.get("parts", [])[0].get("text", ""))  # Access text using dictionary keys
 
 # User input
 user_prompt = st.chat_input("Escriba un mensaje")
 if user_prompt:
-    st.chat_message("user").
+    st.chat_message("user").markdown(user_prompt)
+    
+    # Send the system instruction along with the user's message if it's the first user message
+    if len(st.session_state.chat_session.history) == 0:
+        full_prompt = system_instruction + "\nUser: " + user_prompt
+    else:
+        full_prompt = user_prompt
+
+    # Send user input to Gemini model
+    gemini_response = st.session_state.chat_session.send_message(full_prompt)
+    
+    # Display model response
+    with st.chat_message("assistant"):
+        st.markdown(gemini_response.text)
+    
+    # Update chat history
+    st.session_state.chat_session.history.append({
+        "role": "user",
+        "parts": [{"text": user_prompt}]
+    })
+    st.session_state.chat_session.history.append({
+        "role": "model",
+        "parts": [{"text": gemini_response.text}]
+    })
