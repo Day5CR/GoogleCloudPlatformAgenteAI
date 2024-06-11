@@ -12,7 +12,7 @@ st.set_page_config(
     page_title="Chat with K-assist chatBOT!",
     page_icon=":brain:",  # cute emoji
     initial_sidebar_state="expanded",
-    layout="wide", 
+    layout="wide",
 )
 
 st.title("Pamela")
@@ -21,7 +21,7 @@ st.markdown("Agente IA: contesta directamente a las compañías por los servicio
 
 # Get project configuration
 PROJECT_ID = os.getenv("GCP_PROJECT")
-LOCATION = os.getenv("us-central1")
+LOCATION = os.getenv("GCP_LOCATION")  # Use GCP_LOCATION to avoid confusion with literal string
 
 # Initialize Vertex AI
 vertexai.init(project=PROJECT_ID, location=LOCATION)
