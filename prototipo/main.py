@@ -20,8 +20,8 @@ st.markdown("Chatbot powered by Gemini flash")
 st.markdown("Agente IA: contesta directamente a las compañías por los servicios de Pamela")
 
 # Get project configuration
-PROJECT_ID = os.getenv("GCP_PROJECT")
-LOCATION = os.getenv("GCP_LOCATION")  # Use GCP_LOCATION to avoid confusion with literal string
+PROJECT_ID = "PROJECTID_O1"
+LOCATION = "us-central1"
 
 # Initialize Vertex AI
 vertexai.init(project=PROJECT_ID, location=LOCATION)
