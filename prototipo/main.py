@@ -1,16 +1,13 @@
 import os
 import streamlit as st
 from dotenv import load_dotenv
-import google.generativeai as gen_ai
-
-# pip install streamlit
-# pip install python-dotenv
-# streamlit run main.py --> EJECUTAR EL MAIN
+import vertexai
+from vertexai.preview.language_models import ChatModel
 
 # Load environment variables
 load_dotenv()
 
-# Frontend of Streamlit
+# Set up Streamlit page configuration
 st.set_page_config(
     page_title="Chat with K-assist chatBOT!",
     page_icon=":brain:",  # cute emoji
@@ -19,15 +16,15 @@ st.set_page_config(
 )
 
 st.title("Pamela")
+st.markdown("Chatbot powered by Gemini flash")
+st.markdown("Agente IA: contesta directamente a las compañías por los servicios de Pamela")
 
-st.markdown("chatbot powered by Gemini flash")
-st.markdown("Agente ia: contesta directamente a las compañías por los servicios de pamela")
+# Get project configuration
+PROJECT_ID = os.getenv("GCP_PROJECT")
+LOCATION = os.getenv("GCP_REGION")
 
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-
-# Model setup
-gen_ai.configure(api_key=GOOGLE_API_KEY)
-model = gen_ai.GenerativeModel('gemini-1.5-flash-001')
+# Initialize Vertex AI
+vertexai.init(project=PROJECT_ID, location=LOCATION)
 
 # System instruction to specialize the AI
 system_instruction = """
@@ -43,16 +40,16 @@ Estilo y Tono:
 - Persuasivo pero sutil.
 
 EJEMPLO 1:
--	Cliente: Hola, me gustaría obtener más información sobre sus servicios de reclutamiento. 
--	Agente IA: ¡Hola! Soy Pamela, gerente de ventas de servicios de reclutamiento. Contamos con 10 años de experiencia ayudando a empresas a encontrar candidatos altamente calificados en diversos sectores como minería, negocios, TIC y más. ¿Podrías decirme tu nombre y en qué área en particular necesitas ayuda con tu proceso de reclutamiento? 
--	Cliente: Mi nombre es [nombre del cliente] y estoy buscando un nuevo gerente de ventas con experiencia en el sector de [nombre del sector]. 
--	Agente IA: Perfecto, [nombre del cliente]. Tenemos una amplia base de datos de candidatos con las habilidades y experiencia que necesitas. Además, podemos personalizar nuestro proceso de búsqueda para asegurarnos de encontrar al candidato ideal para tu empresa. ¿Te gustaría saber más sobre nuestro proceso de selección?
--	Cliente: Sí, me interesa saber más sobre su proceso de selección. 
--	Agente IA: Nuestro proceso de selección se basa en una metodología rigurosa que incluye entrevistas, pruebas de habilidades y evaluaciones psicométricas. También realizamos verificaciones de antecedentes y referencias para asegurarnos de que el candidato sea la mejor opción para tu empresa.
--	Cliente: ¿Cuánto cuestan sus servicios? 
--	Agente IA: El costo de nuestro servicio de búsqueda directa de candidatos varía en función de la complejidad de la vacante y la experiencia del candidato que busca. Sin embargo, podemos ofrecerte un presupuesto personalizado una vez que sepamos más sobre tus requisitos. ¿Te gustaría agendar una llamada para discutir esto con más detalle? Envíame tu correo, por favor. 
--	Cliente:Estoy disponible el [Día] a las [Hora]. Mi correo es [correo electrónico]. 
--	Agente IA: Perfecto, [nombre del cliente]. Te enviaré una invitación a tu correo electrónico para confirmar la cita. ¡Gracias por tu interés!
+- Cliente: Hola, me gustaría obtener más información sobre sus servicios de reclutamiento. 
+- Agente IA: ¡Hola! Soy Pamela, gerente de ventas de servicios de reclutamiento. Contamos con 10 años de experiencia ayudando a empresas a encontrar candidatos altamente calificados en diversos sectores como minería, negocios, TIC y más. ¿Podrías decirme tu nombre y en qué área en particular necesitas ayuda con tu proceso de reclutamiento? 
+- Cliente: Mi nombre es [nombre del cliente] y estoy buscando un nuevo gerente de ventas con experiencia en el sector de [nombre del sector]. 
+- Agente IA: Perfecto, [nombre del cliente]. Tenemos una amplia base de datos de candidatos con las habilidades y experiencia que necesitas. Además, podemos personalizar nuestro proceso de búsqueda para asegurarnos de encontrar al candidato ideal para tu empresa. ¿Te gustaría saber más sobre nuestro proceso de selección?
+- Cliente: Sí, me interesa saber más sobre su proceso de selección. 
+- Agente IA: Nuestro proceso de selección se basa en una metodología rigurosa que incluye entrevistas, pruebas de habilidades y evaluaciones psicométricas. También realizamos verificaciones de antecedentes y referencias para asegurarnos de que el candidato sea la mejor opción para tu empresa.
+- Cliente: ¿Cuánto cuestan sus servicios? 
+- Agente IA: El costo de nuestro servicio de búsqueda directa de candidatos varía en función de la complejidad de la vacante y la experiencia del candidato que busca. Sin embargo, podemos ofrecerte un presupuesto personalizado una vez que sepamos más sobre tus requisitos. ¿Te gustaría agendar una llamada para discutir esto con más detalle? Envíame tu correo, por favor. 
+- Cliente: Estoy disponible el [Día] a las [Hora]. Mi correo es [correo electrónico]. 
+- Agente IA: Perfecto, [nombre del cliente]. Te enviaré una invitación a tu correo electrónico para confirmar la cita. ¡Gracias por tu interés!
 EJEMPLO 2:
 -	Cliente: Hola, estoy interesado en los servicios de reclutamiento que ofrece su empresa. 
 -	Agente IA: ¡Hola! Soy Pamela, gerente de ventas de servicios de reclutamiento. Contamos con 10 años de experiencia ayudando a empresas a encontrar candidatos altamente calificados en diversos sectores como minería, negocios, TIC y más. ¿Podrías decirme tu nombre y en qué área en particular necesitas ayuda con tu proceso de reclutamiento? 
@@ -65,23 +62,17 @@ EJEMPLO 2:
 
 # Translate roles between Gemini-Pro and Streamlit terminology
 def translate_role_for_streamlit(user_role):
-    if user_role == "model":
-        return "assistant"
-    else:
-        return user_role
+    return "assistant" if user_role == "model" else user_role
 
 # Initialize chat session if not already initialized
 if "chat_session" not in st.session_state:
-    st.session_state.chat_session = model.start_chat(history=[])
+    model = ChatModel.from_pretrained("chat-bison-001")
+    st.session_state.chat_session = model.start_chat()
 
 # Display chat history
 for message in st.session_state.chat_session.history:
-    print(message)  # Add this line to inspect the structure of message
-    if isinstance(message, dict):
-        role = message.get("role")  # Access role using dictionary key
-        if role:
-            with st.chat_message(translate_role_for_streamlit(role)):
-                st.markdown(message.get("parts", [])[0].get("text", ""))  # Access text using dictionary keys
+    with st.chat_message(translate_role_for_streamlit(message["role"])):
+        st.markdown(message["text"])
 
 # User input
 user_prompt = st.chat_input("Escriba un mensaje")
@@ -104,9 +95,9 @@ if user_prompt:
     # Update chat history
     st.session_state.chat_session.history.append({
         "role": "user",
-        "parts": [{"text": user_prompt}]
+        "text": user_prompt
     })
     st.session_state.chat_session.history.append({
         "role": "model",
-        "parts": [{"text": gemini_response.text}]
+        "text": gemini_response.text
     })
