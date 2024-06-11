@@ -21,7 +21,7 @@ st.markdown("Agente IA: contesta directamente a las compañías por los servicio
 
 # Get project configuration
 PROJECT_ID = os.getenv("GCP_PROJECT")
-LOCATION = os.getenv("GCP_REGION")
+LOCATION = os.getenv("us-central1")
 
 # Initialize Vertex AI
 vertexai.init(project=PROJECT_ID, location=LOCATION)
