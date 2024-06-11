@@ -62,23 +62,17 @@ EJEMPLO 2:
 
 # Translate roles between Gemini-Pro and Streamlit terminology
 def translate_role_for_streamlit(user_role):
-    if user_role == "model":
-        return "assistant"
-    else:
-        return user_role
+    return "assistant" if user_role == "model" else user_role
 
 # Initialize chat session if not already initialized
 if "chat_session" not in st.session_state:
-    st.session_state.chat_session = model.start_chat(history=[])
+model = ChatModel.from_pretrained("gemini-1.5-flash-001")
+    st.session_state.chat_session = model.start_chat()
 
 # Display chat history
 for message in st.session_state.chat_session.history:
-    print(message)  # Add this line to inspect the structure of message
-    if isinstance(message, dict):
-        role = message.get("role")  # Access role using dictionary key
-        if role:
-            with st.chat_message(translate_role_for_streamlit(role)):
-                st.markdown(message.get("parts", [])[0].get("text", ""))  # Access text using dictionary keys
+    with st.chat_message(translate_role_for_streamlit(message["role"])):
+        st.markdown(message["text"])
 
 # User input
 user_prompt = st.chat_input("Escriba un mensaje")
@@ -91,22 +85,6 @@ if user_prompt:
     else:
         full_prompt = user_prompt
 
-    # Send user input to Gemini model
-    gemini_response = st.session_state.chat_session.send_message(full_prompt)
-    
-    # Display model response
-    with st.chat_message("assistant"):
-        st.markdown(gemini_response.text)
-    
-    # Update chat history
-    st.session_state.chat_session.history.append({
-        "role": "user",
-        "parts": [{"text": user_prompt}]
-    })
-    st.session_state.chat_session.history.append({
-        "role": "model",
-        "parts": [{"text": gemini_response.text}]
-    })
     # Send user input to Gemini model
     gemini_response = st.session_state.chat_session.send_message(full_prompt)
     
