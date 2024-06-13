@@ -20,8 +20,6 @@ st.markdown("Chatbot powered by Gemini flash")
 st.markdown("Agente IA: contesta directamente a las compañías por los servicios de Pamela")
 
 
-model = gen_ai.GenerativeModel('gemini-1.5-flash-001')
-
 # Initialize Vertex AI
 vertexai.init(project="theta-sunlight-420517", location="us-central1")
 
@@ -58,6 +56,7 @@ EJEMPLO 2:
 -	Cliente: Claro, mi correo es [correo electrónico]. Estoy disponible mañana a las [Hora]. 
 -	Agente IA: Perfecto, [nombre del cliente]. Te enviaré una invitación a tu correo electrónico para confirmar la cita. ¡Gracias por tu interés!
 """
+
 # Traducir roles entre Gemini-Pro y terminología de Streamlit
 def translate_role_for_streamlit(user_role):
     if user_role == "model":
@@ -67,12 +66,11 @@ def translate_role_for_streamlit(user_role):
 
 # Inicializar sesión de chat si no está ya inicializada
 if "chat_session" not in st.session_state:
-    model = ChatModel.from_pretrained("text-bison")
+    model = ChatModel.from_pretrained("gemini-1.5-flash-001")
     st.session_state.chat_session = model.start_chat(history=[])
 
 # Mostrar historial de chat
 for message in st.session_state.chat_session.history:
-    print(message)  # Añadir esta línea para inspeccionar la estructura del mensaje
     if isinstance(message, dict):
         role = message.get("role")  # Acceder al rol usando clave de diccionario
         if role:
