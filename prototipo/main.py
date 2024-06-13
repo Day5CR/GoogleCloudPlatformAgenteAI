@@ -21,7 +21,18 @@ st.markdown("Agente IA: contesta directamente a las compañías por los servicio
 
 # Initialize Vertex AI
 vertexai.init(project="theta-sunlight-420517", location="us-central1")
-model = GenerativeModel('gemini-1.5-flash-001')
+
+# List available models to verify model name
+from google.cloud import aiplatform
+
+aiplatform.init(project="theta-sunlight-420517", location="us-central1")
+models = aiplatform.Model.list()
+st.write("Modelos disponibles en Vertex AI:")
+for model in models:
+    st.write(f"Nombre: {model.display_name}, ID: {model.name}")
+
+# Load the correct model
+model = ChatModel.from_pretrained("gemini-1.5-flash-001")
 
 # System instruction to specialize the AI
 system_instruction = """
@@ -57,7 +68,6 @@ EJEMPLO 2:
 -	Agente IA: Perfecto, [nombre del cliente]. Te enviaré una invitación a tu correo electrónico para confirmar la cita. ¡Gracias por tu interés!
 """
 
-
 # Traducir roles entre la terminología de Gemini-Pro y Streamlit
 def translate_role_for_streamlit(user_role):
     if user_role == "model":
@@ -71,7 +81,6 @@ if "chat_session" not in st.session_state:
 
 # Mostrar el historial del chat
 for message in st.session_state.chat_session.history:
-    print(message)  # Agregar esta línea para inspeccionar la estructura del mensaje
     if isinstance(message, dict):
         role = message.get("role")  # Access role using dictionary key
         if role:
@@ -105,10 +114,3 @@ if user_prompt:
         "role": "model",
         "parts": [{"text": gemini_response.text}]
     })
-
-
-    # Darle data set -- formato jsonl y la cantidad de datos 
-    # vnetaja entrenarlopor unica ves 
-    # dbo ver como hacerle funcionar el modelo en githut 
-    ## UTILIZAR LA API DE GOGLE SEARCH
-
