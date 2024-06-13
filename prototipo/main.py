@@ -20,7 +20,7 @@ st.markdown("Chatbot powered by Gemini flash")
 st.markdown("Agente IA: contesta directamente a las compañías por los servicios de Pamela")
 
 # Get project configuration
-PROJECT_ID = "PROJECTID_O1"
+PROJECT_ID = "theta-sunlight-420517"
 LOCATION = "us-central1"
 model = gen_ai.GenerativeModel('gemini-1.5-flash-001')
 
