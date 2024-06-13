@@ -21,6 +21,7 @@ st.markdown("Agente IA: contesta directamente a las compañías por los servicio
 
 # Initialize Vertex AI
 vertexai.init(project="theta-sunlight-420517", location="us-central1")
+model = GenerativeModel('gemini-1.5-flash-001')
 
 # System instruction to specialize the AI
 system_instruction = """
@@ -56,25 +57,26 @@ EJEMPLO 2:
 -	Agente IA: Perfecto, [nombre del cliente]. Te enviaré una invitación a tu correo electrónico para confirmar la cita. ¡Gracias por tu interés!
 """
 
-# Traducir roles entre Gemini-Pro y terminología de Streamlit
+
+# Traducir roles entre la terminología de Gemini-Pro y Streamlit
 def translate_role_for_streamlit(user_role):
     if user_role == "model":
         return "assistant"
     else:
         return user_role
 
-# Inicializar sesión de chat si no está ya inicializada
+# Inicializar la sesión de chat si aún no está inicializada
 if "chat_session" not in st.session_state:
-    model = ChatModel.from_pretrained("gemini-1.5-flash-001")
     st.session_state.chat_session = model.start_chat(history=[])
 
-# Mostrar historial de chat
+# Mostrar el historial del chat
 for message in st.session_state.chat_session.history:
+    print(message)  # Agregar esta línea para inspeccionar la estructura del mensaje
     if isinstance(message, dict):
-        role = message.get("role")  # Acceder al rol usando clave de diccionario
+        role = message.get("role")  # Access role using dictionary key
         if role:
             with st.chat_message(translate_role_for_streamlit(role)):
-                st.markdown(message.get("parts", [])[0].get("text", ""))  # Acceder al texto usando claves de diccionario
+                st.markdown(message.get("parts", [])[0].get("text", ""))   # Acceder al texto usando las claves del diccionario
 
 # Entrada del usuario
 user_prompt = st.chat_input("Escriba un mensaje")
@@ -87,14 +89,14 @@ if user_prompt:
     else:
         full_prompt = user_prompt
 
-    # Enviar entrada del usuario al modelo Gemini
+    # Enviar la entrada del usuario al modelo de Gemini
     gemini_response = st.session_state.chat_session.send_message(full_prompt)
     
-    # Mostrar respuesta del modelo
+    # Mostrar la respuesta del modelo
     with st.chat_message("assistant"):
         st.markdown(gemini_response.text)
     
-    # Actualizar historial de chat
+    # Actualizar el historial del chat
     st.session_state.chat_session.history.append({
         "role": "user",
         "parts": [{"text": user_prompt}]
@@ -103,3 +105,10 @@ if user_prompt:
         "role": "model",
         "parts": [{"text": gemini_response.text}]
     })
+
+
+    # Darle data set -- formato jsonl y la cantidad de datos 
+    # vnetaja entrenarlopor unica ves 
+    # dbo ver como hacerle funcionar el modelo en githut 
+    ## UTILIZAR LA API DE GOGLE SEARCH
+
