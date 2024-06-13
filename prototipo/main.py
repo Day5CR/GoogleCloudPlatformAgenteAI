@@ -19,13 +19,11 @@ st.title("Pamela")
 st.markdown("Chatbot powered by Gemini flash")
 st.markdown("Agente IA: contesta directamente a las compañías por los servicios de Pamela")
 
-# Get project configuration
-PROJECT_ID = "theta-sunlight-420517"
-LOCATION = "us-central1"
+
 model = gen_ai.GenerativeModel('gemini-1.5-flash-001')
 
 # Initialize Vertex AI
-vertexai.init(project=PROJECT_ID, location=LOCATION)
+vertexai.init(project="theta-sunlight-420517", location="us-central1")
 
 # System instruction to specialize the AI
 system_instruction = """
@@ -69,7 +67,7 @@ def translate_role_for_streamlit(user_role):
 
 # Inicializar sesión de chat si no está ya inicializada
 if "chat_session" not in st.session_state:
-    model = ChatModel.from_pretrained("chat-bison-001")
+    model = ChatModel.from_pretrained("text-bison")
     st.session_state.chat_session = model.start_chat(history=[])
 
 # Mostrar historial de chat
