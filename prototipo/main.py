@@ -60,46 +60,46 @@ EJEMPLO 2:
 -	Cliente: Claro, mi correo es [correo electrónico]. Estoy disponible mañana a las [Hora]. 
 -	Agente IA: Perfecto, [nombre del cliente]. Te enviaré una invitación a tu correo electrónico para confirmar la cita. ¡Gracias por tu interés!
 """
-
-# Translate roles between Gemini-Pro and Streamlit terminology
+# Traducir roles entre Gemini-Pro y terminología de Streamlit
 def translate_role_for_streamlit(user_role):
     if user_role == "model":
         return "assistant"
     else:
         return user_role
 
-# Initialize chat session if not already initialized
+# Inicializar sesión de chat si no está ya inicializada
 if "chat_session" not in st.session_state:
+    model = ChatModel.from_pretrained("chat-bison-001")
     st.session_state.chat_session = model.start_chat(history=[])
 
-# Display chat history
+# Mostrar historial de chat
 for message in st.session_state.chat_session.history:
-    print(message)  # Add this line to inspect the structure of message
+    print(message)  # Añadir esta línea para inspeccionar la estructura del mensaje
     if isinstance(message, dict):
-        role = message.get("role")  # Access role using dictionary key
+        role = message.get("role")  # Acceder al rol usando clave de diccionario
         if role:
             with st.chat_message(translate_role_for_streamlit(role)):
-                st.markdown(message.get("parts", [])[0].get("text", ""))  # Access text using dictionary keys
+                st.markdown(message.get("parts", [])[0].get("text", ""))  # Acceder al texto usando claves de diccionario
 
-# User input
+# Entrada del usuario
 user_prompt = st.chat_input("Escriba un mensaje")
 if user_prompt:
     st.chat_message("user").markdown(user_prompt)
     
-    # Send the system instruction along with the user's message if it's the first user message
+    # Enviar la instrucción del sistema junto con el mensaje del usuario si es el primer mensaje del usuario
     if len(st.session_state.chat_session.history) == 0:
         full_prompt = system_instruction + "\nUser: " + user_prompt
     else:
         full_prompt = user_prompt
 
-    # Send user input to Gemini model
+    # Enviar entrada del usuario al modelo Gemini
     gemini_response = st.session_state.chat_session.send_message(full_prompt)
     
-    # Display model response
+    # Mostrar respuesta del modelo
     with st.chat_message("assistant"):
         st.markdown(gemini_response.text)
     
-    # Update chat history
+    # Actualizar historial de chat
     st.session_state.chat_session.history.append({
         "role": "user",
         "parts": [{"text": user_prompt}]
