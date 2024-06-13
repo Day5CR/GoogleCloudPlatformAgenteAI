@@ -19,7 +19,6 @@ st.title("Pamela")
 st.markdown("Chatbot powered by Gemini flash")
 st.markdown("Agente IA: contesta directamente a las compañías por los servicios de Pamela")
 
-
 # Initialize Vertex AI
 vertexai.init(project="theta-sunlight-420517", location="us-central1")
 
